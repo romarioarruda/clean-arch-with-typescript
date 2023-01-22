@@ -49,7 +49,7 @@ describe('Signup Controller', () => {
     expect(httpResponse.body).toEqual(new MissingParamError('email'))
   })
 
-  test.only('Should return 400 if an invalid email is provided', () => {
+  test('Should return 400 if an invalid email is provided', () => {
     const sut = factorySut()
 
     const httpRequest = {
