@@ -9,8 +9,9 @@ class EmailValidatorStub implements EmailValidator {
   }
 }
 
+const emailValidator = new EmailValidatorStub()
+
 const factorySut = (): SignUpController => {
-  const emailValidator = new EmailValidatorStub()
   return new SignUpController(emailValidator)
 }
 
@@ -99,5 +100,24 @@ describe('Signup Controller', () => {
 
     expect(httpResponse.statusCode).toBe(400)
     expect(httpResponse.body).toEqual(new MissingParamError('passwordConfirmation'))
+  })
+
+  test('Should call email validator with valid email', () => {
+    const sut = factorySut()
+
+    const spy = jest.spyOn(emailValidator, 'isValid')
+
+    const httpRequest = {
+      body: {
+        name: 'dev tester',
+        email: 'teste@email.com',
+        password: 'any-pass',
+        passwordConfirmation: 'any-pass'
+      }
+    }
+
+    sut.handle(httpRequest)
+
+    expect(spy).toHaveBeenCalledWith('teste@email.com')
   })
 })
