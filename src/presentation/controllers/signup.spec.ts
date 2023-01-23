@@ -1,14 +1,8 @@
+import { EmailService } from "../../domain/use-cases/email-validator";
 import { InvalidParamError, MissingParamError, ServerError } from "../errors";
-import { EmailValidator } from "../protocols";
 import { SignUpController } from "./signup"
 
-class EmailValidatorStub implements EmailValidator {
-  isValid(email: string): boolean {
-    return /^[\w-]+@[\w-]+\.\w+$/.test(email)
-  }
-}
-
-const emailValidator = new EmailValidatorStub()
+const emailValidator = new EmailService()
 
 const factorySut = (): SignUpController => {
   return new SignUpController(emailValidator)
