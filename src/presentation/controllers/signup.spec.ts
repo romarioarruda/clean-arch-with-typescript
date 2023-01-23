@@ -101,6 +101,24 @@ describe('Signup Controller', () => {
     expect(httpResponse.body).toEqual(new MissingParamError('passwordConfirmation'))
   })
 
+  test('Should return 400 if password is different of passwordConfirmation', () => {
+    const sut = factorySut()
+
+    const httpRequest = {
+      body: {
+        name: 'dev tester',
+        email: 'teste@email.com',
+        password: 'any-pass',
+        passwordConfirmation: 'other-pass'
+      }
+    }
+
+    const httpResponse = sut.handle(httpRequest)
+
+    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new InvalidParamError('passwordConfirmation'))
+  })
+
   test('Should call email validator with valid email', () => {
     const sut = factorySut()
 
