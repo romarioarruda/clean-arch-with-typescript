@@ -1,4 +1,4 @@
-import { EmailService } from "../../domain/use-cases/email-validator";
+import { EmailService } from "../../domain/use-cases/email-service";
 import { InvalidParamError, MissingParamError, ServerError } from "../errors";
 import { SignUpController } from "./signup"
 
