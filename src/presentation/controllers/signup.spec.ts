@@ -1,11 +1,12 @@
-import { EmailService } from "../../domain/use-cases";
+import { EmailService, SignUpService } from "../../domain/use-cases";
 import { InvalidParamError, MissingParamError, ServerError } from "../errors";
 import { SignUpController } from "./signup"
 
 const emailValidator = new EmailService()
+const signupService = new SignUpService()
 
 const factorySut = (): SignUpController => {
-  return new SignUpController(emailValidator)
+  return new SignUpController(emailValidator, signupService)
 }
 
 describe('Signup Controller', () => {
@@ -113,25 +114,6 @@ describe('Signup Controller', () => {
     expect(httpResponse.body).toEqual(new InvalidParamError('passwordConfirmation'))
   })
 
-  test('Should call email validator with valid email', () => {
-    const sut = factorySut()
-
-    const spy = jest.spyOn(emailValidator, 'isValid')
-
-    const httpRequest = {
-      body: {
-        name: 'dev tester',
-        email: 'teste@email.com',
-        password: 'any-pass',
-        passwordConfirmation: 'any-pass'
-      }
-    }
-
-    sut.handle(httpRequest)
-
-    expect(spy).toHaveBeenCalledWith('teste@email.com')
-  })
-
   test('Should return 500 if EmailValidator throws', () => {
     const sut = factorySut()
     
@@ -152,5 +134,48 @@ describe('Signup Controller', () => {
 
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body).toEqual(new ServerError(new Error()))
+  })
+
+  test('Should return 200 if called signup create method successfuly', async () => {
+    const sut = factorySut()
+
+    const spy = jest.spyOn(signupService, 'create')
+
+    const httpRequest = {
+      body: {
+        name: 'dev tester',
+        email: 'teste@email.com',
+        password: 'any-pass',
+        passwordConfirmation: 'any-pass'
+      }
+    }
+
+    const httpResponse = sut.handle(httpRequest)
+
+    expect(httpResponse.statusCode).toBe(200)
+    expect(spy).toHaveBeenCalledWith({
+      name: 'dev tester',
+      email: 'teste@email.com',
+      password: 'any-pass',
+    })
+  })
+
+  test('Should call email validator with valid email', () => {
+    const sut = factorySut()
+
+    const spy = jest.spyOn(emailValidator, 'isValid')
+
+    const httpRequest = {
+      body: {
+        name: 'dev tester',
+        email: 'teste@email.com',
+        password: 'any-pass',
+        passwordConfirmation: 'any-pass'
+      }
+    }
+
+    sut.handle(httpRequest)
+
+    expect(spy).toHaveBeenCalledWith('teste@email.com')
   })
 })
