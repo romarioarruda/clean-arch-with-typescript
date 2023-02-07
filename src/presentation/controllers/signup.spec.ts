@@ -1,12 +1,21 @@
 import { EmailService, SignUpService } from "../../domain/use-cases";
 import { InvalidParamError, MissingParamError, ServerError } from "../errors";
+import { RequiredFieldValidation, ValidatorComposite } from "../helpers/validators";
 import { SignUpController } from "./signup"
 
 const emailValidator = new EmailService()
+const requiredFields = [
+  new RequiredFieldValidation('name', emailValidator),
+  new RequiredFieldValidation('email', emailValidator),
+  new RequiredFieldValidation('password', emailValidator),
+  new RequiredFieldValidation('passwordConfirmation', emailValidator)
+]
+
 const signupService = new SignUpService()
+const composite = new ValidatorComposite(requiredFields)
 
 const factorySut = (): SignUpController => {
-  return new SignUpController(emailValidator, signupService)
+  return new SignUpController(emailValidator, signupService, composite)
 }
 
 describe('Signup Controller', () => {
