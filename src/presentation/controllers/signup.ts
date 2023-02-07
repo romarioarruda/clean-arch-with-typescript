@@ -1,37 +1,25 @@
-import { InvalidParamError, MissingParamError } from "../errors";
-import { badRequest, serverError, success } from "../helpers/http";
+import { InvalidParamError } from "../errors";
 import { EmailValidator, SignUpProtocol } from "../../domain/protocols";
 import { Controller, HttpRequest, HttpResponse } from "../protocols";
+import { badRequest, serverError, success } from "../helpers/http";
+import { ValidatorProtocol } from "../helpers/validators/validator-protocol";
 
 export class SignUpController implements Controller {
 
   constructor(
     private readonly emailValidator: EmailValidator,
-    private readonly signupService: SignUpProtocol
-  ) {
-    this.emailValidator = emailValidator
-    this.signupService = signupService
-  }
+    private readonly signupService: SignUpProtocol,
+    private readonly validator: ValidatorProtocol,
+  ) {}
 
   handle(req: HttpRequest): HttpResponse {
     try {
-      const requiredFields = ['name', 'email', 'password', 'passwordConfirmation']
-
-      for (const field of requiredFields) {
-        if (!req.body[field]) {
-          return badRequest(new MissingParamError(field))
-        }
+      const error = this.validator.validate(req.body)
+      if (error) {
+        return badRequest(error)
       }
 
-      const { name, email, password, passwordConfirmation } = req.body
-
-      const isEmailValid = this.emailValidator.isValid(email)
-
-      if (!isEmailValid) return badRequest(new InvalidParamError('email'))
-
-      if (password !== passwordConfirmation) {
-        return badRequest(new InvalidParamError('passwordConfirmation'))
-      }
+      const { name, email, password } = req.body
 
       const signup = this.signupService.create({
         name, email, password
